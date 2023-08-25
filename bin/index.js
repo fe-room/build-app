@@ -72,12 +72,11 @@ const buildFundtion = async () => {
                 iscustom: answers.iscustom,
                 platform: answers.platform,
               });
-            console.log(hbuilderconfig, 'hbuilderconfig')
+            if (hbuilderconfig.publish) {
+                //删除自定义数据部分
+                delete hbuilderconfig.publish;
+              }
         }
-        if (hbuilderconfig.publish) {
-            //删除自定义数据部分
-            delete hbuilderconfig.publish;
-          }
           var apps = await utils.buildApp();
           console.log(apps)
         //   apps.map(async (appUrl) => {

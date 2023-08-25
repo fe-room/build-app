@@ -2,6 +2,7 @@ const fs = require("fs");
 const JSON5 = require("json5");
 const path = require("path");
 const cp = require("child_process");
+const config = require("../config/index.js");
 var workDir = process.cwd();
 /**
  * 读取工作目录配置文件
@@ -61,6 +62,8 @@ function OpenHBuilder() {
         reject(1);
         return;
       }
+      console.log(HBuilderConfig, 'process.env.HBuilder')
+      return
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
       ls.on("exit", function (code) {
         if (code === 0) {
