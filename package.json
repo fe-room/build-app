@@ -1,0 +1,21 @@
+{
+  "name": "publish-cli",
+  "version": "1.0.0",
+  "description": "自动发布测试",
+  "main": "./bin/index.js",
+  "bin": {
+    "publish-cli": "./bin/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "form-data": "^4.0.0",
+    "dayjs": "^1.11.9",
+    "inquirer": "^8.2.6",
+    "json5": "^2.2.3",
+    "axios": "^0.27.2"
+  }
+}
