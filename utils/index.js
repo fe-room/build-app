@@ -62,8 +62,6 @@ function OpenHBuilder() {
         reject(1);
         return;
       }
-      console.log(HBuilderConfig, 'process.env.HBuilder')
-      return
       var ls = cp.spawn(config.HBuilderCli, ["open"], {});
       ls.on("exit", function (code) {
         if (code === 0) {
@@ -93,57 +91,56 @@ function OpenHBuilder() {
           return;
         }
         var apps = [];
-        console.log(apps, 'apps')
-        // buildAppCli(config.ConfigFileTemp, function (code, data) {
-        //   // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
-        //   if (code == 0) {
-        //     if (apps.length) {
-        //       console.log("安装包", apps);
-        //     } else {
-        //       console.log("未获取到安装包");
-        //     }
+        buildAppCli(config.ConfigFileName, function (code, data) {
+          // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
+          if (code == 0) {
+            if (apps.length) {
+              console.log("安装包", apps);
+            } else {
+              console.log("未获取到安装包");
+            }
   
-        //     resolve(apps);
-        //   } else if (code == -1 && data) {
-        //     //自定义异常
-        //     console.log(data);
-        //     reject(-1, data);
-        //   } else if (code == -2 && data) {
-        //     //进程正常返回数据
-        //     console.log(data);
+            resolve(apps);
+          } else if (code == -1 && data) {
+            //自定义异常
+            console.log(data);
+            reject(-1, data);
+          } else if (code == -2 && data) {
+            //进程正常返回数据
+            console.log(data);
   
-        //     if (
-        //       data.indexOf("打包成功") != -1 &&
-        //       data.indexOf("安装包位置：") != -1
-        //     ) {
-        //       // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
-        //       var appPath = data.split("安装包位置：")[1];
+            if (
+              data.indexOf("打包成功") != -1 &&
+              data.indexOf("安装包位置：") != -1
+            ) {
+              // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
+              var appPath = data.split("安装包位置：")[1];
   
-        //       if (!appPath) {
-        //         reject("打包的路径获取出错");
-        //         return;
-        //       }
-        //       var newAppPath = appPath
-        //         .replace(/\//g, "\\")
-        //         .replace(/\n/g, "")
-        //         .replace(/(\s*$)/g, "");
+              if (!appPath) {
+                reject("打包的路径获取出错");
+                return;
+              }
+              var newAppPath = appPath
+                .replace(/\//g, "\\")
+                .replace(/\n/g, "")
+                .replace(/(\s*$)/g, "");
   
-        //       apps.push(newAppPath);
-        //     }
-        //     if (data.indexOf("iOS Appstore 下载地址:") != -1) {
-        //       // ios下载地址
-        //       var appUrl = GetUrl(data);
-        //       if (appUrl) {
-        //         // 下载文件
-        //         apps.push(appUrl);
-        //       }
-        //     }
-        //   } else if (code == -3 && data) {
-        //     //进程异常返回数据
-        //     console.log(data); // 追加一行
-        //     reject(data);
-        //   }
-        // });
+              apps.push(newAppPath);
+            }
+            if (data.indexOf("iOS Appstore 下载地址:") != -1) {
+              // ios下载地址
+              var appUrl = GetUrl(data);
+              if (appUrl) {
+                // 下载文件
+                apps.push(appUrl);
+              }
+            }
+          } else if (code == -3 && data) {
+            //进程异常返回数据
+            console.log(data); // 追加一行
+            reject(data);
+          }
+        });
       } catch (error) {
         console.log("error", error);
         reject(error);
@@ -155,20 +152,20 @@ function OpenHBuilder() {
  *打包app
  *
  * @param {*} rootPath 项目路径
- * @param { string } HBuilderConfigFileTemp 临时配置文件路径
+ * @param { string } configFile 临时配置文件路径
  * @param { CallbackHandler } callback
  */
- function buildAppCli(HBuilderConfigFileTemp, callback) {
+ function buildAppCli(ConfigFilePath, callback) {
   console.log(
     config.HBuilderCli,
-    ["pack", "--config", HBuilderConfigFileTemp].join(" ")
+    ["pack", "--config", ConfigFilePath].join(" ")
   );
 
 
   var pack = cp.spawn(config.HBuilderCli, [
     "pack",
     "--config",
-    HBuilderConfigFileTemp,
+    ConfigFilePath,
   ]);
   pack.stdout.on("data", (data) => {
     var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
