@@ -1,5 +1,5 @@
 {
-    //项目名字或项目绝对路径
+    // 项目名字或项目绝对路径
     "project": "test-pack",
     //打包平台 默认值android  值有"android","ios" 如果要打多个逗号隔开打包平台
     "platform":"ios,android",
@@ -45,5 +45,9 @@
     //push广告 true打开 false关闭
     "pushads":false,
     //加入换量联盟 true加入 false不加入
-    "exchange":false
+    "exchange":false,
+    // 打包后自动发布的路径
+    "publish": {   
+      "appKey": "cd6fd6f8392406120609b9676dde52e5"
+    }
 }
