@@ -7,3 +7,4 @@ console.log("工作路径：", workDir);
 exports.ConfigFileName = path.join(workDir, "configure.json");
 exports.manifestFileName = path.join(workDir, "manifest.json");
 exports.HBuilderCli = path.join(process.env.HBuilder || "", "cli");
+exports.workDir = workDir;

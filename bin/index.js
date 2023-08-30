@@ -5,6 +5,8 @@ const dayjs = require("dayjs");
 const utils = require('../utils/index.js') 
 const config = require("../config/index.js");
 const PGYERAppUploader = require('../utils/PGYERAppUploader.js');
+const file  = require('../utils/file.js')
+const wxBot  = require('../utils/wx-bot.js')
 const buildFundtion = async () => {
     // 读取Hbuild配置
     let HBuilderConfig = await utils.readConfig(config.ConfigFileName)
@@ -63,9 +65,7 @@ const buildFundtion = async () => {
       if(!answers.version && !answers.iscustom) {
         return console.log('请确认并修改版本号后再进行打包操作!')
       }
-      console.log("answers", answers);
-      return 
-      //整合配置文件
+      //整合配置生成打包配置
       let hbuilderconfig = utils.MergeHBuilderConfig(HBuilderConfig, {
           iscustom: answers.iscustom,
           platform: answers.platform,
@@ -74,25 +74,21 @@ const buildFundtion = async () => {
           //删除自定义数据部分
           delete hbuilderconfig.publish;
         }
+        console.log(hbuilderconfig, '合并后的配置hbuliderconfig')
+        // await utils.WriteConfig(config.ConfigFileName, hbuilderconfig);
         // const apps = await utils.buildApp();
-        console.log(apps)
-        apps.forEach(async (appUrl) => {
-          if (appUrl && appUrl.indexOf("https") == 0) {
-            appUrl = await file.downloadFile(
-              appUrl,
-              config.workDir + "/" + "unpackage/release/ipa",
-              manifest.name + "_" + dayjs().format("YYYYMMDDHHmm") + ".ipa"
-            );
-          } else if (appUrl) {
-            // 安卓才打开浏览器，ios直接打开没用，所有暂时不打卡
-
-            var url = `http://${utils.getLocalIP()}:${
-              config.port
-            }?link=${encodeURIComponent(appUrl)}`;
-
-            utils.openDefaultBrowser(url);
-          }
-          console.log("本地目录：", appUrl);
+        // console.log(apps)
+        // 将打包出来的app在线链接下载到本地
+        // const appUrl = 'https://ide.dcloud.net.cn/build/download/c1dc4f70-4632-11ee-aec0-395d202c5bb7'
+        // if (appUrl && appUrl.indexOf("https") == 0) {
+        //   appUrl = await file.downloadFile(
+        //     appUrl,
+        //     config.workDir + "/" + "unpackage/release"
+        //   );
+        //   console.log(appUrl, 'appUrl')
+        // } 
+        // const appUrl = config.workDir + "/" + "unpackage/release/" + '__UNI__9613C89_0829141537.apk'
+          return
           // 配置上传蒲公英的地址
           if (uploader && appUrl) {
             const uploadOptions = {
@@ -100,10 +96,19 @@ const buildFundtion = async () => {
               log: true, // 显示 log
               buildUpdateDescription: answers.description // 版本更新描述
             }
-            uploader.upload(uploadOptions).then(console.log).catch(console.error);
+            uploader.upload(uploadOptions).then((res)=> {
+              console.log(res)
+            
+            }).catch(console.error);
           }
-          // 配置通报机器人
-        });
+          // 配置wx通报机器人
+          const data = {
+            "msgtype": "text",
+            "text": {
+              "content": "墨库测试\nhttps://www.pgyer.com/tzQJ  v3.7.3（build55） 安卓\nhttps://www.pgyer.com/W2sT  v3.7.3（build46） ios\n更新内容:\n1. 自提扫码过期登录和第三方一键登录问题\n2.共读会和社区的bug"
+            }
+          }
+          wxBot(data)
       })
       .catch(function (err) {
         console.log("错误信息：", err);

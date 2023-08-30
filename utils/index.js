@@ -43,8 +43,7 @@ function readConfig(FileName) {
     });
   
     var newConfig = Object.assign({}, HBuilderConfig, info);
-    var str = JSON.stringify(newConfig, undefined, "\t");
-    return str;
+    return newConfig;
   }
 
   /**
@@ -202,7 +201,8 @@ function buildApp() {
  * @param {*} Config
  * @returns
  */
-function WriteConfig(ConfigFilePath, str = "") {
+function WriteConfig(ConfigFilePath, newConfig) {
+  const str = JSON.stringify(newConfig, undefined, "\t");
   return new Promise((resolve, reject) => {
     fs.mkdir(
       path.dirname(ConfigFilePath),
@@ -227,10 +227,10 @@ function MergeManifestConfig(ManifestConfig = {}, info = {}) {
   return str;
 }
 
-  module.exports = {
-    readConfig,
-    MergeHBuilderConfig,
-    MergeManifestConfig,
-    buildApp,
-    WriteConfig
-  }
+module.exports = {
+  readConfig,
+  MergeHBuilderConfig,
+  MergeManifestConfig,
+  buildApp,
+  WriteConfig
+}
