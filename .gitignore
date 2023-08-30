@@ -15,7 +15,7 @@
 remote-raw/
 coverage.txt
 
-
+test
 vendor/
 config.json
 package-lock.json
