@@ -1,12 +1,24 @@
 #!/usr/bin/env node
 
 const inquirer = require("inquirer");
-const dayjs = require("dayjs");
 const utils = require('../utils/index.js') 
 const config = require("../config/index.js");
 const PGYERAppUploader = require('../utils/PGYERAppUploader.js');
 const file  = require('../utils/file.js')
 const wxBot  = require('../utils/wx-bot.js')
+const fs = require('fs');
+// 下载到本地
+const downloadFile = async (appUrl) => {
+    const filepath = config.workDir + "/" + "unpackage/clipack"
+    if (!fs.existsSync(filepath)) {
+      fs.mkdirSync(filepath, { recursive: true });
+    }
+    return await file.downloadFile(
+        appUrl,
+        filepath
+      );
+}
+
 const buildFundtion = async () => {
     // 读取Hbuild配置
     let HBuilderConfig = await utils.readConfig(config.ConfigFileName)
@@ -19,8 +31,9 @@ const buildFundtion = async () => {
       console.log(err);
     });
     // 初始化蒲公英上传
-    const appKey = HBuilderConfig?.publish?.appKey || ''
+    const appKey = HBuilderConfig?.publish?.appKey || ""
     const uploader = appKey ? new PGYERAppUploader(appKey) : null;
+    console.log(uploader, 'uploader')
     if (!HBuilderConfig || !manifest) {
         return;
     }
@@ -74,41 +87,65 @@ const buildFundtion = async () => {
           //删除自定义数据部分
           delete hbuilderconfig.publish;
         }
-        console.log(hbuilderconfig, '合并后的配置hbuliderconfig')
-        // await utils.WriteConfig(config.ConfigFileName, hbuilderconfig);
-        // const apps = await utils.buildApp();
-        // console.log(apps)
+        const packNum = hbuilderconfig.platform.split(',')
+        console.log(hbuilderconfig, '本次打包配置')
+        console.log(packNum.length, '本次打包的app个数')
+        // https://hx.dcloud.net.cn/cli/pack
+        // 覆盖写入配置文件
+        await utils.WriteConfig(config.ConfigFileName, hbuilderconfig);
+        const apps = await utils.buildApp();
         // 将打包出来的app在线链接下载到本地
-        // const appUrl = 'https://ide.dcloud.net.cn/build/download/c1dc4f70-4632-11ee-aec0-395d202c5bb7'
-        // if (appUrl && appUrl.indexOf("https") == 0) {
-        //   appUrl = await file.downloadFile(
-        //     appUrl,
-        //     config.workDir + "/" + "unpackage/release"
-        //   );
-        //   console.log(appUrl, 'appUrl')
-        // } 
-        // const appUrl = config.workDir + "/" + "unpackage/release/" + '__UNI__9613C89_0829141537.apk'
-          return
-          // 配置上传蒲公英的地址
-          if (uploader && appUrl) {
-            const uploadOptions = {
-              filePath: appUrl, // 上传文件路径
-              log: true, // 显示 log
-              buildUpdateDescription: answers.description // 版本更新描述
-            }
-            uploader.upload(uploadOptions).then((res)=> {
-              console.log(res)
-            
-            }).catch(console.error);
+        const downloadPromises = apps.map((file) => downloadFile(file));
+        const appUrl = await Promise.all(downloadPromises)
+        console.log(`app已下载至${config.workDir}/unpackage/clipack目录下`)
+        // 上传到蒲公英
+        const uploadPgyer = async (appUrl, description) => {
+          const uploadOptions = {
+            filePath: appUrl, // 上传文件路径
+            log: true, // 显示 log
+            buildUpdateDescription: description // 版本更新描述
           }
+          return await uploader.upload(uploadOptions)
+        }
+        // 配置上传蒲公英的地址
+        const uploadPromises = appUrl.map((file) => uploadPgyer(file, answers.description));
+        const uploadResult = await Promise.all(uploadPromises)
+        if(uploadResult && uploadResult.length) {
+          // "墨库测试\n\nAndroid版本：\n- 链接：[https://www.pgyer.com/tzQJ ↗]\n- 版本：v3.7.3（build 55）\n- 构建时间:  2023-08-30 09:34:16\n\niOS版本：\n- 链接：[https://www.pgyer.com/W2sT ↗]\n- 版本：v3.7.3（build 46）\n- 构建时间： 2023-08-30 09:34:16\n\n更新内容：\n1. 修复了测试登录问题。\n2. 修复了插件包。"
+          let content = `墨库构建成功\n\n`
+          let buildUpdateDescription = ''
+          uploadResult.forEach((res)=> {
+            if(res.code === 0 ) {
+              const data = res.data
+              // 打包类型
+              const buildType  =  data.buildType === 1 ? 'IOS' : 'Android'
+              // 打包版本号
+              const buildVersion = 'v'+ data.buildVersion 
+              // 区分历史版本号
+              const buildBuildVersion = data.buildBuildVersion
+              // 更新描述
+              buildUpdateDescription = data.buildUpdateDescription
+              // 更新时间
+              const buildUpdated = data.buildUpdated
+              // 应用短连接
+              const downLoadUrl = `https://www.pgyer.com/${data.buildShortcutUrl}`
+
+              content =  `${content}${buildType}版本：\n- 链接：[${downLoadUrl} ↗]\n- 版本：${buildVersion}（build ${buildBuildVersion}）\n- 构建时间:  ${buildUpdated}` 
+            }
+          })
+          const tips =  buildUpdateDescription.split(' ');
+          content = `${content}\n\n更新内容：\n${tips.join('\n')}。`
+          console.log('更新通知内容', content)
           // 配置wx通报机器人
           const data = {
             "msgtype": "text",
             "text": {
-              "content": "墨库测试\nhttps://www.pgyer.com/tzQJ  v3.7.3（build55） 安卓\nhttps://www.pgyer.com/W2sT  v3.7.3（build46） ios\n更新内容:\n1. 自提扫码过期登录和第三方一键登录问题\n2.共读会和社区的bug"
+              "content":  content
             }
           }
-          wxBot(data)
+          const jsonString = JSON.stringify(data);
+          wxBot(jsonString)
+        }
       })
       .catch(function (err) {
         console.log("错误信息：", err);

@@ -3,7 +3,6 @@ const JSON5 = require("json5");
 const path = require("path");
 const cp = require("child_process");
 const config = require("../config/index.js");
-var iconv = require("iconv-lite");
 var workDir = process.cwd();
 /**
  * 读取工作目录配置文件
@@ -28,19 +27,19 @@ function readConfig(FileName) {
   }
 
   function MergeHBuilderConfig(HBuilderConfig = {}, info = {}) {
-    HBuilderConfig.android = Object.assign({}, HBuilderConfig.android, {
-      certfile: HBuilderConfig.android.certfile
-        ? path.join(workDir, HBuilderConfig.android.certfile)
-        : "",
-    });
-    HBuilderConfig.ios = Object.assign({}, HBuilderConfig.ios, {
-      profile: HBuilderConfig.ios.profile
-        ? path.join(workDir, HBuilderConfig.ios.profile)
-        : "",
-      certfile: HBuilderConfig.ios.certfile
-        ? path.join(workDir, HBuilderConfig.ios.certfile)
-        : "",
-    });
+    // HBuilderConfig.android = Object.assign({}, HBuilderConfig.android, {
+    //   certfile: HBuilderConfig.android.certfile
+    //     ? path.join(workDir, HBuilderConfig.android.certfile)
+    //     : "",
+    // });
+    // HBuilderConfig.ios = Object.assign({}, HBuilderConfig.ios, {
+    //   profile: HBuilderConfig.ios.profile
+    //     ? path.join(workDir, HBuilderConfig.ios.profile)
+    //     : "",
+    //   certfile: HBuilderConfig.ios.certfile
+    //     ? path.join(workDir, HBuilderConfig.ios.certfile)
+    //     : "",
+    // });
   
     var newConfig = Object.assign({}, HBuilderConfig, info);
     return newConfig;
@@ -99,55 +98,24 @@ function buildApp() {
         reject("打开HBuilder编辑器失败");
         return;
       }
-      var apps = [];
+      const apps = [];
       buildAppCli(config.ConfigFileName, function (code, data) {
-        // code==-1 自定义错误code,-2是正常数据,-3是错误数据, 其他是进程code
-        if (code == 0) {
-          if (apps.length) {
-            console.log("安装包", apps);
-          } else {
-            console.log("未获取到安装包");
-          }
-
-          resolve(apps);
-        } else if (code == -1 && data) {
-          //自定义异常
-          console.log(data);
-          reject(-1, data);
-        } else if (code == -2 && data) {
-          //进程正常返回数据
-          console.log(data);
-
-          if (
-            data.indexOf("打包成功") != -1 &&
-            data.indexOf("安装包位置：") != -1
-          ) {
-            // 打包成功    安装包位置：E:/xiangheng/通知订阅/消息订阅/unpackage/release/apk/__UNI__ECA51B4__20220426171608.apk
-            var appPath = data.split("安装包位置：")[1];
-
-            if (!appPath) {
-              reject("打包的路径获取出错");
-              return;
-            }
-            var newAppPath = appPath
-              .replace(/\//g, "\\")
-              .replace(/\n/g, "")
-              .replace(/(\s*$)/g, "");
-
-            apps.push(newAppPath);
-          }
-          if (data.indexOf("iOS Appstore 下载地址:") != -1) {
-            // ios下载地址
-            var appUrl = GetUrl(data);
-            if (appUrl) {
-              // 下载文件
-              apps.push(appUrl);
-            }
-          }
-        } else if (code == -3 && data) {
-          //进程异常返回数据
-          console.log(data); // 追加一行
-          reject(data);
+        if(data && code === -2) {
+        // code == -2 子进程正在执行
+        if(data.indexOf('下载地址:') !== -1) {
+           const appUrl = GetUrl(data);
+           console.log('打包成功**************提取链接', appUrl)
+           if(appUrl) {
+             apps.push(appUrl)
+           }
+        }
+        } else if (data && code === -3) {
+          // code == -3  进程执行报错
+          console.log('进程报错请检查。。。。')
+        } else if ( data && code === 0) {
+          // code == 0  进程执行完成退出
+            console.log("本次成功打包", apps.length);
+            resolve(apps)
         }
       });
     } catch (error) {
@@ -178,14 +146,12 @@ function buildApp() {
   ]);
   pack.stdout.on("data", (data) => {
     console.log(`子进程输出:${data}`)
-    var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
-    callback && callback(-2, str);
+    callback && callback(-2, data);
   });
 
   pack.stderr.on("data", (data) => {
     console.log(`子进程错误:${data}`)
-    var str = iconv.decode(Buffer.from(data, "binary"), "GBK");
-    callback && callback(-3, str);
+    callback && callback(-3, data);
   });
 
   pack.on("exit", function (code) {
