@@ -7,6 +7,8 @@ const PGYERAppUploader = require('../utils/PGYERAppUploader.js');
 const file  = require('../utils/file.js')
 const wxBot  = require('../utils/wx-bot.js')
 const fs = require('fs');
+const chalk = require('chalk')
+const figlet = require("figlet");
 // 下载到本地
 const downloadFile = async (appUrl) => {
     const filepath = config.workDir + "/" + "unpackage/clipack"
@@ -20,6 +22,8 @@ const downloadFile = async (appUrl) => {
 }
 
 const buildFundtion = async () => {
+    // 输出Logo
+    console.log(chalk.yellow(figlet.textSync('mekoom', { horizontalLayout: 'full' })));
     // 读取Hbuild配置
     let HBuilderConfig = await utils.readConfig(config.ConfigFileName)
     .catch(function (err) {
@@ -33,7 +37,6 @@ const buildFundtion = async () => {
     // 初始化蒲公英上传
     const appKey = HBuilderConfig?.publish?.appKey || ""
     const uploader = appKey ? new PGYERAppUploader(appKey) : null;
-    console.log(uploader, 'uploader')
     if (!HBuilderConfig || !manifest) {
         return;
     }
@@ -70,7 +73,7 @@ const buildFundtion = async () => {
         },
         {
           type: "Input",
-          message: `请输入更新日志`,
+          message: `请输入更新日志(多条日志请用空格分隔)`,
           name: 'description',
           when: answers => !answers.iscustom
         },
@@ -83,13 +86,13 @@ const buildFundtion = async () => {
           iscustom: answers.iscustom,
           platform: answers.platform,
         });
-        if (hbuilderconfig.publish) {
-          //删除自定义数据部分
-          delete hbuilderconfig.publish;
-        }
+        // if (hbuilderconfig.publish) {
+        //   //删除自定义数据部分
+        //   delete hbuilderconfig.publish;
+        // }
         const packNum = hbuilderconfig.platform.split(',')
-        console.log(hbuilderconfig, '本次打包配置')
-        console.log(packNum.length, '本次打包的app个数')
+        // console.log(hbuilderconfig, '本次打包配置')
+        // console.log(packNum.length, '本次打包的app个数')
         // https://hx.dcloud.net.cn/cli/pack
         // 覆盖写入配置文件
         await utils.WriteConfig(config.ConfigFileName, hbuilderconfig);
@@ -135,7 +138,7 @@ const buildFundtion = async () => {
           })
           const tips =  buildUpdateDescription.split(' ');
           content = `${content}\n\n更新内容：\n${tips.join('\n')}。`
-          console.log('更新通知内容', content)
+          console.log('更新通知内容', chalk.green(content))
           // 配置wx通报机器人
           const data = {
             "msgtype": "text",

@@ -10,7 +10,6 @@ const path = require("path");
  * @param {*} filepath 下载后存储路径
  */
 async function downloadFile(fileUrl, filepath) {
-  console.log(fileUrl, filepath, 'fileUrl,filepath')
   // 发起 GET 请求并下载文件
    const response = await axios({
     method: 'get',

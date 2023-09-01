@@ -145,8 +145,9 @@ function buildApp() {
     ConfigFilePath,
   ]);
   pack.stdout.on("data", (data) => {
-    console.log(`子进程输出:${data}`)
-    callback && callback(-2, data);
+    console.log(`${data}`)
+    const str =  data + ""
+    callback && callback(-2, str);
   });
 
   pack.stderr.on("data", (data) => {
