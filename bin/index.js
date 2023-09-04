@@ -136,7 +136,7 @@ const buildFundtion = async () => {
           })
           const tips =  buildUpdateDescription.split(' ');
           content = `${content}\n\n更新内容：\n${tips.join('\n')}。`
-          console.log('更新通知内容', chalk.green(content))
+          console.log(chalk.green(content))
           // 配置wx通报机器人
           const data = {
             "msgtype": "text",
