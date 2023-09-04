@@ -112,7 +112,7 @@ function buildApp() {
         } else if (data && code === -3) {
           // code == -3  进程执行报错
           console.log('进程报错请检查。。。。')
-        } else if ( data && code == 0) {
+        } else if ( code == 0) {
           // code == 0  进程执行完成退出
             console.log("本次成功打包", apps.length);
             resolve(apps)
