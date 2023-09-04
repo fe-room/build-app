@@ -1,15 +1,16 @@
 {
-  "name": "publish-cli",
+  "name": "@zhsw/build-app",
   "version": "1.0.0",
-  "description": "自动发布测试",
+  "description": "uniapp云打包自动发布测试",
   "main": "./bin/index.js",
   "bin": {
     "publish-cli": "./bin/index.js"
   },
   "scripts": {
+    "push": "npm publish --access public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "chen",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
@@ -25,5 +26,11 @@
     "inquirer": "^8.2.6",
     "json5": "^2.2.3",
     "progress": "^2.0.3"
-  }
+  },
+  "keywords": [
+    "uniapp",
+    "cli",
+    "build",
+    "打包"
+  ]
 }
