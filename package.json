@@ -1,17 +1,17 @@
 {
-  "name": "@zhsw/build-app",
+  "name": "build-app",
   "version": "1.0.0",
   "description": "uniapp云打包自动发布测试",
   "main": "./bin/index.js",
   "bin": {
-    "publish-cli": "./bin/index.js"
+    "build-app": "bin/index.js"
   },
   "scripts": {
     "push": "npm publish --access public",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "chen",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.27.2",
     "chalk": "^4.1.2",
