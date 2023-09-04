@@ -2,7 +2,7 @@ const cp = require("child_process");
 
 
 module.exports = function (data) {
-    const url = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=06830602-4646-4980-ab31-26fd5d5ced79';
+    const url = process.env.BOT_URL || '';
     const headers = { 'Content-Type': 'application/json' };
     // 执行 curl 命令
     const curl = cp.spawn('curl', ['-X', 'POST', '-H', JSON.stringify(headers), '-d', data, url]); 
