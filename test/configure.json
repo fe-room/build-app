@@ -45,9 +45,5 @@
     //push广告 true打开 false关闭
     "pushads":false,
     //加入换量联盟 true加入 false不加入
-    "exchange":false,
-    // 打包后自动发布的路径
-    "publish": {   
-      "appKey": "cd6fd6f8392406120609b9676dde52e5"
-    }
+    "exchange":false
 }

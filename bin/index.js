@@ -9,6 +9,8 @@ const wxBot  = require('../utils/wx-bot.js')
 const fs = require('fs');
 const chalk = require('chalk')
 const figlet = require("figlet");
+require('dotenv').config();
+
 // 下载到本地
 const downloadFile = async (appUrl) => {
     const filepath = config.workDir + "/" + "unpackage/clipack"
@@ -35,7 +37,7 @@ const buildFundtion = async () => {
       console.log(err);
     });
     // 初始化蒲公英上传
-    const appKey = HBuilderConfig?.publish?.appKey || ""
+    const appKey = process.env.APP_KEY || ''
     const uploader = appKey ? new PGYERAppUploader(appKey) : null;
     if (!HBuilderConfig || !manifest) {
         return;
@@ -86,11 +88,7 @@ const buildFundtion = async () => {
           iscustom: answers.iscustom,
           platform: answers.platform,
         });
-        if (hbuilderconfig.publish) {
-          //删除自定义数据部分
-          delete hbuilderconfig.publish;
-        }
-        const packNum = hbuilderconfig.platform.split(',')
+        // const packNum = hbuilderconfig.platform.split(',')
         // console.log(hbuilderconfig, '本次打包配置')
         // console.log(packNum.length, '本次打包的app个数')
         // https://hx.dcloud.net.cn/cli/pack
