@@ -112,7 +112,7 @@ function buildApp() {
         } else if (data && code === -3) {
           // code == -3  进程执行报错
           console.log('进程报错请检查。。。。')
-        } else if ( data && code === 0) {
+        } else if ( data && code == 0) {
           // code == 0  进程执行完成退出
             console.log("本次成功打包", apps.length);
             resolve(apps)
@@ -157,7 +157,8 @@ function buildApp() {
 
   pack.on("exit", function (code) {
     console.log(`子进程退出:${code}`)
-    callback && callback(code);
+    const str = code + ""
+    callback && callback(str);
   });
 }
 

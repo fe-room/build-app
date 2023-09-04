@@ -86,10 +86,10 @@ const buildFundtion = async () => {
           iscustom: answers.iscustom,
           platform: answers.platform,
         });
-        // if (hbuilderconfig.publish) {
-        //   //删除自定义数据部分
-        //   delete hbuilderconfig.publish;
-        // }
+        if (hbuilderconfig.publish) {
+          //删除自定义数据部分
+          delete hbuilderconfig.publish;
+        }
         const packNum = hbuilderconfig.platform.split(',')
         // console.log(hbuilderconfig, '本次打包配置')
         // console.log(packNum.length, '本次打包的app个数')
