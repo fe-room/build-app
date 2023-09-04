@@ -24,8 +24,7 @@
     "https": "^1.0.0",
     "iconv-lite": "^0.6.3",
     "inquirer": "^8.2.6",
-    "json5": "^2.2.3",
-    "progress": "^2.0.3"
+    "json5": "^2.2.3"
   },
   "keywords": [
     "uniapp",
